@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWMC | Nador West Med Connect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050511;
+            --text-color: #EFEBE0;
+            --accent-orange: #FF4D00;
+            --accent-teal: #00F0FF;
+            --accent-purple: #7000FF;
+            --surface: rgba(255, 255, 255, 0.05);
+            --surface-hover: rgba(255, 255, 255, 0.1);
+            --grid-line: rgba(255, 255, 255, 0.1);
+            
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            width: 100vw;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- DITHERING TEXTURE OVERLAY --- */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.07;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+        }
+
+        /* --- TYPOGRAPHY UTILS --- */
+        h1, h2, h3, h4 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .display-text {
+            /* CLAMP for responsiveness: Min 3rem, Target 10vw, Max 12rem */
+            font-size: clamp(3rem, 10vw, 12rem); 
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 5vw, 5rem);
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--grid-line);
+            padding-bottom: 1rem;
+        }
+
+        /* --- LAYOUT --- */
+        section {
+            padding: 6rem 2rem;
+            border-bottom: 1px solid var(--grid-line);
+            position: relative;
+            width: 100%;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* --- HERO SECTION --- */
+        #hero {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: none;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            mix-blend-mode: difference;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.8;
+        }
+
+        /* --- ABOUT SECTION (Wavy/Gradient) --- */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 2rem 0;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-teal));
+            transform: rotate(-2deg) scale(1.05);
+            border-top: 2px solid var(--text-color);
+            border-bottom: 2px solid var(--text-color);
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: scroll 20s linear infinite;
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 4rem);
+            font-weight: bold;
+            color: var(--bg-color);
+        }
+
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4rem;
+            margin-top: 4rem;
+        }
+
+        @media(min-width: 768px) {
+            .about-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .lead-text {
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            line-height: 1.4;
+        }
+
+        /* --- SERVICES (Bento Grid) --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--grid-line);
+            padding: 3rem 2rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: var(--surface-hover);
+            border-color: var(--accent-teal);
+        }
+
+        /* Gradient blobs for hover */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-orange) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .card:hover::before {
+            opacity: 0.15;
+        }
+
+        .card h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card p {
+            position: relative;
+            z-index: 2;
+            opacity: 0.7;
+        }
+
+        /* --- PROCESS SECTION --- */
+        .process-step {
+            border-left: 2px solid var(--accent-teal);
+            padding-left: 2rem;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .process-step::before {
+            content: '';
+            position: absolute;
+            left: -11px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-color);
+            border: 2px solid var(--accent-orange);
+            border-radius: 50%;
+        }
+
+        .process-step:last-child { margin-bottom: 0; }
+
+        /* --- CONTACT --- */
+        .cta-section {
+            background: linear-gradient(180deg, var(--bg-color) 0%, #1a0b2e 100%);
+            text-align: center;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .big-link {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 8vw, 8rem);
+            color: var(--accent-teal);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .big-link:hover {
+            color: var(--accent-orange);
+            font-style: italic;
+        }
+        
+        /* Decorative floating elements */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+
+    <section id="hero">
+        <div id="canvas-container"></div>
+        <div class="hero-content">
+            <span class="hero-subtitle">NWM CONNECT • MOROCCO</span>
+            <h1 class="display-text">
+                GATEWAY<br>TO NADOR<br>WEST MED
+            </h1>
+        </div>
+    </section>
+
+    <section id="about">
+        <div class="marquee-container">
+            <div class="marquee-content">
+                LOCAL EXPERTISE • GLOBAL STANDARDS • STRATEGIC PARTNER • MARKET ENTRY • LOCAL EXPERTISE • GLOBAL STANDARDS •
+            </div>
+        </div>
+        <div class="container">
+            <div class="about-grid">
+                <div>
+                    <h2 class="section-title">The Fixer<br>Mentality</h2>
+                </div>
+                <div>
+                    <p class="lead-text">
+                        Navigating the Oriental region requires more than a map; it requires a network. 
+                        <strong>NWMconnect</strong> is your boots-on-the-ground strategic partner.
+                        We bridge the gap between international ambition and local reality in the Nador West Med complex.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services">
+        <div class="container">
+            <h2 class="section-title">Capabilities</h2>
+            <div class="bento-grid">
+                <div class="card">
+                    <h3>01. Legal & Setup</h3>
+                    <p>Accelerated entity formation, permit acquisition, and regulatory compliance specifically for the NWM free zone.</p>
+                </div>
+                <div class="card">
+                    <h3>02. Logistics Recon</h3>
+                    <p>Site selection, warehousing solutions, and supply chain mapping within the Oriental region's infrastructure.</p>
+                </div>
+                <div class="card">
+                    <h3>03. Talent Acquisition</h3>
+                    <p>Sourcing multilingual local talent and managing labor relations to ensure smooth operations from day one.</p>
+                </div>
+                <div class="card">
+                    <h3>04. Gov Relations</h3>
+                    <p>Direct lines of communication with local authorities to expedite processes and resolve bottlenecks.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="process">
+        <div class="container">
+            <h2 class="section-title">The Flow</h2>
+            <div style="max-width: 800px; margin-top: 4rem;">
+                <div class="process-step">
+                    <h4>Phase 01: Reconnaissance</h4>
+                    <p>We assess your specific needs against local realities, delivering a feasibility roadmap within 14 days.</p>
+                </div>
+                <div class="process-step">
+                    <h4>Phase 02: Integration</h4>
+                    <p>We deploy our network to secure permits, real estate, and initial staffing.</p>
+                </div>
+                <div class="process-step">
+                    <h4>Phase 03: Stabilization</h4>
+                    <p>We oversee the initial months of operation, acting as your on-call fixer for any local friction.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="orb" style="width: 300px; height: 300px; background: var(--accent-purple); top: 20%; left: 20%;"></div>
+        <div class="orb" style="width: 400px; height: 400px; background: var(--accent-orange); bottom: 10%; right: 10%;"></div>
+        
+        <h2 style="font-size: 1.5rem; letter-spacing: 0.1em; margin-bottom: 2rem;">ESTABLISH YOUR PRESENCE</h2>
+        <a href="mailto:hello@nwmc.ma" class="big-link">HELLO@NWMC.MA</a>
+        
+        <footer style="margin-top: 4rem; opacity: 0.5; font-size: 0.9rem;">
+            &copy; 2024 NWMCONNECT. NADOR, MOROCCO.
+        </footer>
+    </section>
+
+    <script>
+        const canvas = document.createElement('canvas');
+        const container = document.getElementById('canvas-container');
+        container.appendChild(canvas);
+        const gl = canvas.getContext('webgl');
+
+        if (!gl) {
+            console.error('WebGL not supported');
+        }
+
+        // Fullscreen canvas
+        function resize() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Vertex Shader (Pass-through)
+        const vsSource = `
+            attribute vec2 a_position;
+            void main() {
+                gl_Position = vec4(a_position, 0.0, 1.0);
+            }
+        `;
+
+        // Fragment Shader (The Visual Magic)
+        const fsSource = `
+            precision highp float;
+            uniform vec2 u_resolution;
+            uniform float u_time;
+            uniform vec2 u_mouse;
+
+            // Simplex noise function
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+            float snoise(vec2 v) {
+                const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+                vec2 i  = floor(v + dot(v, C.yy) );
+                vec2 x0 = v - i + dot(i, C.xx);
+                vec2 i1;
+                i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                vec4 x12 = x0.xyxy + C.xxzz;
+                x12.xy -= i1;
+                i = mod289(i);
+                vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                m = m*m ;
+                m = m*m ;
+                vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                vec3 h = abs(x) - 0.5;
+                vec3 ox = floor(x + 0.5);
+                vec3 a0 = x - ox;
+                m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                vec3 g;
+                g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                return 130.0 * dot(m, g);
+            }
+
+            void main() {
+                vec2 st = gl_FragCoord.xy/u_resolution.xy;
+                st.x *= u_resolution.x/u_resolution.y;
+                
+                // Mouse interaction
+                vec2 mouse = u_mouse / u_resolution;
+                float mouseDist = distance(st, mouse);
+                
+                // Creating fluid movement
+                float time = u_time * 0.2;
+                
+                vec2 pos = st * 3.0;
+                float DF = 0.0;
+                
+                // Add noise layers
+                float a = 0.0;
+                vec2 vel = vec2(time * 0.1);
+                DF += snoise(pos + vel) * .25 + .25;
+                
+                // Add more noise based on mouse
+                float mouseEffect = smoothstep(0.5, 0.0, mouseDist);
+                DF += snoise(pos - mouse * 2.0) * mouseEffect * 0.5;
+
+                // Wavy grid lines effect
+                vec2 grid = abs(fract(st * 5.0 + DF) - 0.5) / fwidth(st * 5.0 + DF);
+                float line = min(grid.x, grid.y);
+                float gridAlpha = 1.0 - smoothstep(0.0, 0.05, line);
+
+                // Color Palette
+                vec3 color1 = vec3(0.02, 0.02, 0.15); // Deep Blue
+                vec3 color2 = vec3(1.0, 0.3, 0.0);    // Orange
+                vec3 color3 = vec3(0.0, 0.94, 1.0);   // Teal
+
+                vec3 finalColor = mix(color1, color2, DF);
+                finalColor = mix(finalColor, color3, length(st - 0.5) * sin(time));
+
+                // Add dark vignette
+                finalColor *= smoothstep(1.5, 0.2, length(st - 0.5));
+
+                gl_FragColor = vec4(finalColor, 1.0);
+            }
+        `;
+
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        // Set up geometry (a simple square covering the screen)
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        const positions = [
+            -1, -1,
+            1, -1,
+            -1, 1,
+            -1, 1,
+            1, -1,
+            1, 1,
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        const positionLocation = gl.getAttribLocation(program, "a_position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        // Uniforms
+        const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+        const timeLocation = gl.getUniformLocation(program, "u_time");
+        const mouseLocation = gl.getUniformLocation(program, "u_mouse");
+
+        let mouseX = 0;
+        let mouseY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = canvas.height - e.clientY; // Flip Y for WebGL
+        });
+
+        function render(time) {
+            time *= 0.001; // Convert to seconds
+
+            gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+            gl.uniform1f(timeLocation, time);
+            gl.uniform2f(mouseLocation, mouseX, mouseY);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+    </script>
+</body>
+</html>
